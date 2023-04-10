@@ -1,0 +1,22 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t thanhhv317/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run thanhhv317/react-test npm test -- --coverage
+
+after_success:
+  - docker build -t thanhhv317/multi-client ./client'
+  - docker build -t thanhhv317/multi-nginx ./nginx
+  - docker build -t thanhhv317/multi-server ./server
+  - docker build -t thanhhv317/multi-worker ./worker
+  # Log in to the docker CLI
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  # Take those imaes and push them to docker hub
+  - docker push thanhhv317/multi-client
+  - docker push thanhhv317/multi-nginx
+  - docker push thanhhv317/multi-server
+  - docker push thanhhv317/multi-worker
